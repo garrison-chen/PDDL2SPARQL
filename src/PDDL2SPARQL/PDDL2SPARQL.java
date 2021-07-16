@@ -9,20 +9,6 @@ import java.util.regex.Pattern;
 
 public class PDDL2SPARQL {
 	
-	/*
-	public static void main(String[] args) throws IOException {
-		
-		String InputPDDL = "(and (not (http://127.0.0.1/ontology/SUMO.owl#equal ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_ADDRESS1 ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_ADDRESS2))\n" + 
-		"				     (http://127.0.0.1/ontology/protont.owl#locatedIn ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_CITY1 ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_STATE1)\n" + 
-		"					 (http://127.0.0.1/ontology/protont.owl#locatedIn ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_CITY2 ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_STATE2))";
-		
-		
-		//String InputPDDL = "(not (http://127.0.0.1/ontology/books.owl#Novel ?http://127.0.0.1/services/1.1/book_authorprice_service.owls#_BOOK))";
-		translator(InputPDDL);
-	}
-	*/
-	
-	
 	
 	public static String translator(String InputPDDL) throws IOException 
 	{
@@ -225,5 +211,60 @@ public class PDDL2SPARQL {
 		return words.length;
 
     }  
+	
+	
+	/*
+	 * TODO:fix the following error:
+	PDDL version 
+	(http://www.w3.org/1999/02/22-rdf-syntax-ns#type 
+	?http://localhost:8080/services/FirstReceptionService.owl#ObtainFirstSurnameComposed
+	https://raw.githubusercontent.com/gtzionis/WelcomeOntology/main/welcome.ttl#DialogueUser)
+
+	=========================================== CURRENT ===========================================
+
+	PREFIX URI1: <https://raw.githubusercontent.com/gtzionis/WelcomeOntology/main/welcome.ttl#>
+
+
+	ASK {
+	    ?ObtainFirstSurnameComposed http://www.w3.org/1999/02/22-rdf-syntax-ns#type URI1:DialogueUser.
+
+	FILTER(
+	URI1:DialogueUser   
+	)
+	}
+
+	=========================================== EXPECTED ===========================================
+
+	PREFIX URI1: <https://raw.githubusercontent.com/gtzionis/WelcomeOntology/main/welcome.ttl#>
+	PREFIX URI2: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+
+	ASK WHERE {
+	    ?ObtainFirstSurnameComposed URI2:type URI1:DialogueUser.
+	}
+	================================================================================================
+	*/
+	
+	
+	
+	public static void main(String[] args) throws IOException {
+		
+		/*
+		String InputPDDL = "(and (not (http://127.0.0.1/ontology/SUMO.owl#equal ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_ADDRESS1 ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_ADDRESS2))\n" + 
+		"				     (http://127.0.0.1/ontology/protont.owl#locatedIn ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_CITY1 ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_STATE1)\n" + 
+		"					 (http://127.0.0.1/ontology/protont.owl#locatedIn ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_CITY2 ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_STATE2))";
+		
+		*/
+		
+		/*
+		String InputPDDL = "(not (http://127.0.0.1/ontology/books.owl#Novel ?http://127.0.0.1/services/1.1/book_authorprice_service.owls#_BOOK))";
+		*/
+		
+		
+		String InputPDDL = "(http://www.w3.org/1999/02/22-rdf-syntax-ns#type ?http://localhost:8080/services/FirstReceptionService.owl#ObtainFirstSurnameComposed https://raw.githubusercontent.com/gtzionis/WelcomeOntology/main/welcome.ttl#DialogueUser)";
+		
+		translator(InputPDDL);
+	}
+	
 
 }
