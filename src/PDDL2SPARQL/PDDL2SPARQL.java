@@ -13,16 +13,34 @@ public class PDDL2SPARQL {
 	public static String translator(String InputPDDL) throws IOException 
 	{
 		
-		// STRING INPUT
 		String PDDL = InputPDDL;
 		String OutputSPARQL = "";
 
+		/*
+		 * for ?variables, remove its uri
 		
-		String uri = "[?]http:\\/\\/(\\S*?)+.#";
+		//String uri = "[?]http:\\/\\/(\\S*?)+.#";
+		String uri = "[?]\\S+[#]";
+		
 	    Matcher matcher_1 = Pattern.compile(uri).matcher(PDDL);
 	    while(matcher_1.find()) {
-	    	PDDL = PDDL.replace(matcher_1.group(), "?"); //trim URI & add ? before variables
+	    	PDDL = PDDL.replace(matcher_1.group(), "?"); //trim URI && add ? before variables
 	    }
+	    */
+	    //System.out.print(PDDL);
+	    
+	    String uri_localhost1 = "http://localhost:8080\\S+[#]";
+	    String uri_localhost2 = "https://localhost:8080\\S+[#]";
+	    Matcher matcher_localhost1 = Pattern.compile(uri_localhost1).matcher(PDDL);
+	    Matcher matcher_localhost2 = Pattern.compile(uri_localhost2).matcher(PDDL);
+	    while(matcher_localhost1.find()) {
+	    	PDDL = PDDL.replace(matcher_localhost1.group(), ""); //trim URI && add ? before variables
+	    }
+	    while(matcher_localhost2.find()) {
+	    	PDDL = PDDL.replace(matcher_localhost2.group(), ""); //trim URI && add ? before variables
+	    }
+	    //System.out.print("\n\nPDDL Trim localhost: " + PDDL + "\n\n");
+	    
 	    String T = "(.*)";
 	    Matcher matcher_2 = Pattern.compile(T).matcher(PDDL);
 	    String triplet = "";
@@ -40,6 +58,8 @@ public class PDDL2SPARQL {
 	    triplet = triplet.replace(" *", "");
 	    //System.out.println("Triplet: "+triplet);
 	    
+	    
+	    
 	    String Filter = "";
 		Scanner scan_3 = new Scanner(PDDL);
 		while(scan_3.hasNextLine()) {
@@ -54,13 +74,19 @@ public class PDDL2SPARQL {
 		Filter = Filter.replace("   ?", "?");
 		Filter = Filter.replace("  ?", "?");
 		Filter = Filter.replace(" ?", "?");
-		Filter = Filter.replace("not ", "not");	
+		Filter = Filter.replace("not ", "not");
+		Filter = Filter.replace("   http", "http");
+		Filter = Filter.replace("  http", "http");
+		Filter = Filter.replace(" http", "http");
 		//System.out.println("Filter: "+Filter);
 		
 	    String URI = "";
-	    String uri_2 = "http:\\/\\/(\\S*?)+.#";
+	    //String uri_2 = "http:\\/\\/(\\S*?)+.#";
+	    //String uri_2 = "http.+\\S+[#]";
+	    String uri_2 = "http\\S+[#]";//
 	    Pattern p = Pattern.compile(uri_2);
 	    Matcher matcher_uri = p.matcher(triplet);
+	    //Matcher matcher_uri = p.matcher(InputPDDL);
 	    int j = 1;
 	    while(matcher_uri.find()) {
 	    	
@@ -72,7 +98,10 @@ public class PDDL2SPARQL {
 	    	matcher_uri = p.matcher(triplet);
 	    	j++;
 	    }
+	    //System.out.println("URI: "+URI);
 	    URI = URI.replace("<", "<http");
+	    //System.out.println("URI: "+URI);
+	    URI = URI.replace("?", "");//
 	    //System.out.println("URI: "+URI);
 	    //System.out.println("Filter: "+Filter);
 	    
@@ -94,7 +123,8 @@ public class PDDL2SPARQL {
 			}
 		}
 	    scan_2.close();
-	    //System.out.println("Triplet_Pair: "+Triplet_Pair);//
+	    //System.out.println("Triplet_Pair: "+Triplet_Pair);
+	    
 	    Matcher matcher_rdf = Pattern.compile("rdf:type").matcher(Triplet_Pair);
 	    if (matcher_rdf.find()) {
 	    	URI = URI + "PREFIX rdf:" + " " + "<http://www.w3.org/1999/02/22-rdf-syntax-ns#>";
@@ -113,7 +143,8 @@ public class PDDL2SPARQL {
 	    while(matcher_4.find()) {
 	    	Filter = Filter.replace(matcher_4.group(), "and "); //separate "and" at the beginning
 	    }
-	    //System.out.println(Filter);
+	    //System.out.println("Filter: " + Filter + "\n");
+	    
 		if (wordcount(Filter) == 1) { 
 			//Filter = Filter.replace("not", "not ");
 			String not = "^not";
@@ -125,6 +156,7 @@ public class PDDL2SPARQL {
 			
 			if (wordcount(Filter) == 2) {
 				Filter = Filter.replace("?", " ?");
+				//Filter = Filter.replace("URI", " URI");//
 				String[] words = Filter.trim().split("\\s+");
 				String Filter_new = "";		
 				if (wordcount(Filter) == 3) {
@@ -132,25 +164,25 @@ public class PDDL2SPARQL {
 					Filter_new = Filter_new.replace("not ", "NOT EXISTS ");
 					//System.out.println("Filter_new: "+Filter_new);
 				
-					String SPARQL = URI + "\n" + "\n" + "ASK {\n" + Triplet_Pair + "FILTER(\n" + Filter_new + "\n)\n" + "}";
+					String SPARQL = URI + "\n" + "\n" + "ASK WHERE {\n" + Triplet_Pair + "FILTER(\n" + Filter_new + "\n)\n" + "}";
 					//System.out.println(SPARQL);
 					OutputSPARQL = SPARQL;
 				}else if (wordcount(Filter) == 4) {
 					Filter_new = "not" + " {" + words[2] + " " + words[1] + " " + words[3] + "}";
 					Filter_new = Filter_new.replace("not ", "NOT EXISTS ");
 					System.out.println("Filter_new: "+Filter_new);//
-					String SPARQL = URI + "\n" + "\n" + "ASK {\n" + Triplet_Pair + "FILTER(\n" + Filter_new + "\n)\n" + "}";
+					String SPARQL = URI + "\n" + "\n" + "ASK WHERE {\n" + Triplet_Pair + "FILTER(\n" + Filter_new + "\n)\n" + "}";
 					//System.out.println(SPARQL);
 					OutputSPARQL = SPARQL;
 				}else {
-					System.out.println("Error: Please check again the PDDL input syntax");
+					System.out.println("Error: Please check again the PDDL input syntax\n");
 				}				
 			}else if (wordcount(Filter) == 1) {  //NO FILTER
-				String SPARQL = URI + "\n" + "\n" + "ASK {\n" + Triplet_Pair + "\n" + "}";
+				String SPARQL = URI + "\n" + "\n" + "ASK WHERE {\n" + Triplet_Pair + "\n" + "}";
 				//System.out.println(SPARQL);
 				OutputSPARQL = SPARQL;
 			}else {
-				System.out.println("Error: Please check again the PDDL input syntax");
+				System.out.println("Error: Please check again the PDDL input syntax\n");
 			}
 			
 		} else {
@@ -176,7 +208,7 @@ public class PDDL2SPARQL {
 						String[] w = words[(i+1)/2].trim().split("\\s+");
 						words[(i+1)/2] = "    " + "(" + w[0] + " {" + w[2] + " " + w[1] + " " + w[3] + "})";
 					} else {
-						System.out.println("Error: Please check again the PDDL input syntax");
+						System.out.println("Error: Please check again the PDDL input syntax\n");
 					}
 					Filter_new = Filter_new.concat(words[(i+1)/2] + "   ");
 				
@@ -191,11 +223,12 @@ public class PDDL2SPARQL {
 			Filter_new = Filter_new.replace("or ", "|| ");
 			Filter_new = Filter_new.replace("not ", "NOT EXISTS ");
 		
-			String SPARQL = URI + "\n" + "\n" + "ASK {\n" + Triplet_Pair + "FILTER(\n" + Filter_new + "\n)\n" + "}";
+			String SPARQL = URI + "\n" + "\n" + "ASK WHERE {\n" + Triplet_Pair + "FILTER(\n" + Filter_new + "\n)\n" + "}";
 			OutputSPARQL = SPARQL;
 			
 				
 		}
+		//System.out.print("\n\n=============================================Output SPARQL=================================================\n");
 		System.out.println(OutputSPARQL);
 		return OutputSPARQL;
 		
@@ -213,58 +246,18 @@ public class PDDL2SPARQL {
     }  
 	
 	
-	/*
-	 * TODO:fix the following error:
-	PDDL version 
-	(http://www.w3.org/1999/02/22-rdf-syntax-ns#type 
-	?http://localhost:8080/services/FirstReceptionService.owl#ObtainFirstSurnameComposed
-	https://raw.githubusercontent.com/gtzionis/WelcomeOntology/main/welcome.ttl#DialogueUser)
-
-	=========================================== CURRENT ===========================================
-
-	PREFIX URI1: <https://raw.githubusercontent.com/gtzionis/WelcomeOntology/main/welcome.ttl#>
-
-
-	ASK {
-	    ?ObtainFirstSurnameComposed http://www.w3.org/1999/02/22-rdf-syntax-ns#type URI1:DialogueUser.
-
-	FILTER(
-	URI1:DialogueUser   
-	)
-	}
-
-	=========================================== EXPECTED ===========================================
-
-	PREFIX URI1: <https://raw.githubusercontent.com/gtzionis/WelcomeOntology/main/welcome.ttl#>
-	PREFIX URI2: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-
-
-	ASK WHERE {
-	    ?ObtainFirstSurnameComposed URI2:type URI1:DialogueUser.
-	}
-	================================================================================================
-	*/
-	
-	
-	
 	public static void main(String[] args) throws IOException {
 		
-		/*
-		String InputPDDL = "(and (not (http://127.0.0.1/ontology/SUMO.owl#equal ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_ADDRESS1 ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_ADDRESS2))\n" + 
-		"				     (http://127.0.0.1/ontology/protont.owl#locatedIn ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_CITY1 ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_STATE1)\n" + 
-		"					 (http://127.0.0.1/ontology/protont.owl#locatedIn ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_CITY2 ?http://127.0.0.1/services/1.1/addressDistanceCalculator.owls#_STATE2))";
-		
-		*/
-		
-		/*
-		String InputPDDL = "(not (http://127.0.0.1/ontology/books.owl#Novel ?http://127.0.0.1/services/1.1/book_authorprice_service.owls#_BOOK))";
-		*/
-		
+		//System.out.print("=============================================Input SPARQL=================================================\n");
 		
 		String InputPDDL = "(http://www.w3.org/1999/02/22-rdf-syntax-ns#type ?http://localhost:8080/services/FirstReceptionService.owl#ObtainFirstSurnameComposed https://raw.githubusercontent.com/gtzionis/WelcomeOntology/main/welcome.ttl#DialogueUser)";
 		
+		
+		//System.out.print(InputPDDL);
+
 		translator(InputPDDL);
 	}
+	
 	
 
 }
