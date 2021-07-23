@@ -24,7 +24,6 @@ When relation tuples in the given PDDL syntax contain prefix (e.g. an url), PDDL
 Firstly add the PDDL2SPARQL.jar to your working Java project as the external JARs. Then the program can be invoked by the following codes:
 
 ```java
-import java.io.IOException; 
 import PDDL_SPARQL.*;
 
 public class Test_PDDL2SPARQL {
