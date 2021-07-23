@@ -6,9 +6,9 @@ PDDL2SPARQL is a small program which converts the text in PDDL forms to the corr
 ### 1.1 Relationship Tuples
 PDDL2SPARQL is capable of recognising relationship tuples in PDDL syntax, which can be generally divided into two scenarios:
 
-(1). with predicate, e.g. ``` on ?ob ?underobject ```
+(1). with predicate, e.g. ``` on ?Variable1 ?Variable2 ```, ``` type ?Variable Class ```
 
-(2). without predicate, e.g. ``` holding ?object ```
+(2). without predicate, e.g. ``` holding ?Variable ```
 
 PDDL2SPARQL is capable of differentiating the two scenarios and convert them into the corre- sponding SPARQL relationship forms.
 
